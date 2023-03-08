@@ -23,8 +23,3 @@ func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	return earthRadiusKm * c
 }
-
-func isDistanceGreaterThan3Km(lat1, lon1, lat2, lon2 float64) bool {
-	distance := haversine(lat1, lon1, lat2, lon2)
-	return distance > 3
-}
