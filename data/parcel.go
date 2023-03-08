@@ -10,9 +10,7 @@ type Parcel struct {
 	PickupLongitude  float64 `json:"pickup_longitude"`
 	DropOffLatitude  float64 `json:"dropoff_latitude"`
 	DropOffLongitude float64 `json:"dropoff_longitude"`
+	OrderId          int64   `json:"order_id,omitempty"`
 }
 
-type Response struct {
-	Success bool `json:"success"`
-	OrderID int  `json:"order_id,omitempty"`
-}
+var parcelList []*Parcel
