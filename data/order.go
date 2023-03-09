@@ -16,11 +16,12 @@ type Order struct {
 type OrderStatus string
 
 const (
-	REQUESTED  OrderStatus = "Requested"
-	COMPLETED  OrderStatus = "Completed"
-	ACCEPTED   OrderStatus = "Accepted"
-	INPROGRESS OrderStatus = "In Progress"
-	CANCELLED  OrderStatus = "Cancelled"
+	REQUESTED      OrderStatus = "Requested"
+	COMPLETED      OrderStatus = "Completed"
+	ACCEPTED       OrderStatus = "Accepted"
+	INPROGRESS     OrderStatus = "In Progress"
+	CANCELLED      OrderStatus = "Cancelled"
+	SEARCHINGRIDER OrderStatus = "Searching Rider"
 )
 
 var orderIDCounter int64 = 1

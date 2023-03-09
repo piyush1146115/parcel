@@ -1,10 +1,14 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/hibiken/asynq"
 	"github.com/piyush1146115/parcel/data"
+	"github.com/piyush1146115/parcel/worker"
 	"net/http"
+	"time"
 )
 
 type ParcelResponse struct {
@@ -12,7 +16,17 @@ type ParcelResponse struct {
 	Success bool  `json:"success,omitempty"`
 }
 
-func NewParcelRequest(w http.ResponseWriter, r *http.Request) {
+type OrderHandler struct {
+	taskDistributor worker.TaskDistributor
+}
+
+func NewOrderHandler(t worker.TaskDistributor) *OrderHandler {
+	return &OrderHandler{
+		taskDistributor: t,
+	}
+}
+
+func (oh *OrderHandler) NewParcelRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id, err := getCustomerID(r)
@@ -34,40 +48,21 @@ func NewParcelRequest(w http.ResponseWriter, r *http.Request) {
 
 	orderId := data.CreateNewOrder(id)
 	response := ParcelResponse{OrderId: orderId}
-	var rider *data.Rider
 
-	distance := haversine(parcel.PickupLatitude, parcel.PickupLongitude, parcel.DropOffLatitude, parcel.DropOffLongitude)
-	if distance < 3 {
-		rider = data.GetAvailableCyclist()
-	} else {
-		rider = data.GetAvailableBiker()
+	taskPayload := &worker.OrderProcessingPayload{
+		Order: data.Order{
+			Id: orderId,
+		},
+		Parcel: parcel,
 	}
 
-	if rider == nil {
-		err := data.UpdateOrderStatus(orderId, data.CANCELLED)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		response.Success = false
-
-		json.NewEncoder(w).Encode(response)
-		return
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(30 * time.Second),
+		asynq.Queue(worker.QueueCritical),
 	}
-
-	if err := data.UpdateRiderInOrder(orderId, rider.Id); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if err := data.UpdateOrderStatus(orderId, data.ACCEPTED); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if err := data.UpdateRiderStatus(rider.Id, data.OnTrip); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := oh.taskDistributor.DistributeTaskProcessOrder(context.Background(), taskPayload, opts...); err != nil {
+		http.Error(w, fmt.Sprintf("failed to process order"), http.StatusInternalServerError)
 		return
 	}
 
