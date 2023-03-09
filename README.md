@@ -1,5 +1,8 @@
 # Parcel-Simulator
 
+## HTTP Requests
+Here are some demo request of the server:
+
 ### POST requests:
 
 - Place order for customer with ID 11 (Authorized Customer)
@@ -31,3 +34,7 @@ curl localhost:8090/api/v1/order/status/1678341228942000002
 ```
 Sample response:
 `{"order_id":1678345319223000002,"order_status":"Accepted"}`
+
+## DB Schema
+
+![DB Schema](./media/parcel.png)

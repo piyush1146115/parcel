@@ -1,4 +1,4 @@
-package worker
+package utils
 
 import "math"
 
@@ -10,7 +10,7 @@ func degreesToRadians(degrees float64) float64 {
 	return degrees * math.Pi / 180
 }
 
-func haversine(lat1, lon1, lat2, lon2 float64) float64 {
+func Haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	dLat := degreesToRadians(lat2 - lat1)
 	dLon := degreesToRadians(lon2 - lon1)
 	lat1 = degreesToRadians(lat1)

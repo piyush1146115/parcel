@@ -13,6 +13,12 @@ type TaskDistributor interface {
 		payload *OrderProcessingPayload,
 		opts ...asynq.Option,
 	) error
+
+	DistributeTaskOrderStatusUpdate(
+		ctx context.Context,
+		payload *OrderStatusPayload,
+		opts ...asynq.Option,
+	) error
 }
 
 type RedisTaskDistributor struct {
@@ -22,6 +28,10 @@ type RedisTaskDistributor struct {
 type OrderProcessingPayload struct {
 	Order  data.Order
 	Parcel data.Parcel
+}
+
+type OrderStatusPayload struct {
+	OrderId int64 `json:"order_id"`
 }
 
 func NewRedisTaskDistributor(redisOpt asynq.RedisClientOpt) TaskDistributor {

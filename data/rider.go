@@ -2,6 +2,8 @@ package data
 
 import (
 	"fmt"
+	"github.com/piyush1146115/parcel/utils"
+	"math"
 )
 
 type Rider struct {
@@ -27,23 +29,40 @@ const (
 	OnTrip    RiderStatus = 2
 )
 
-func GetAvailableCyclist() *Rider {
+func GetAvailableCyclist(long, lat float64) *Rider {
+	var rider *Rider
+	minDis := math.MaxFloat64
+
 	for _, r := range riderList {
 		if r.Type == CYCLIST && r.Status == Available {
-			return r
+			//return r
+			dis := utils.Haversine(r.CurrentLatitude, r.CurrentLongitude, lat, long)
+			if dis < minDis {
+				rider = r
+				minDis = dis
+			}
 		}
 	}
 
-	return nil
+	return rider
 }
 
-func GetAvailableBiker() *Rider {
+func GetAvailableBiker(long, lat float64) *Rider {
+	var rider *Rider
+	minDis := math.MaxFloat64
+
 	for _, r := range riderList {
 		if r.Type == BIKER && r.Status == Available {
-			return r
+			//return r
+			dis := utils.Haversine(r.CurrentLatitude, r.CurrentLongitude, lat, long)
+			if dis < minDis {
+				rider = r
+				minDis = dis
+			}
 		}
 	}
 
+	return rider
 	return nil
 }
 

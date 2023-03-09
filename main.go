@@ -126,3 +126,24 @@ func updateRidersLocationPeriodically(interval time.Duration) {
 		log.Info().Msg(fmt.Sprintf("Updated location of rider with id: %d", id))
 	}
 }
+
+func updateOrderStatusPeriodically(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		n := rand.Intn(2)
+		if n == 1 {
+			id := data.GetAnOrderIdWithAcceptedStatus()
+			if id != -1 {
+				data.UpdateOrderStatus(id, data.INPROGRESS)
+			}
+		} else {
+			id := data.GetAnOrderIdWithInProgressStatus()
+			if id != -1 {
+				data.UpdateOrderStatus(id, data.COMPLETED)
+			}
+		}
+
+	}
+}

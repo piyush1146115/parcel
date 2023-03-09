@@ -47,7 +47,6 @@ func (oh *OrderHandler) NewParcelRequest(w http.ResponseWriter, r *http.Request)
 	}
 
 	orderId := data.CreateNewOrder(id)
-	response := ParcelResponse{OrderId: orderId}
 
 	taskPayload := &worker.OrderProcessingPayload{
 		Order: data.Order{
@@ -66,8 +65,13 @@ func (oh *OrderHandler) NewParcelRequest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	response.Success = true
+	statusPayload := &worker.OrderStatusPayload{OrderId: orderId}
+	if err := oh.taskDistributor.DistributeTaskOrderStatusUpdate(context.Background(), statusPayload, opts...); err != nil {
+		http.Error(w, fmt.Sprintf("failed to process order"), http.StatusInternalServerError)
+		return
+	}
 
+	response := ParcelResponse{OrderId: orderId, Success: true}
 	json.NewEncoder(w).Encode(response)
 	return
 }

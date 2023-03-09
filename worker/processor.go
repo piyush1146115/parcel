@@ -16,7 +16,7 @@ const (
 
 type TaskProcessor interface {
 	Start() error
-	ProcessTaskOrder(ctx context.Context, task *asynq.Task) error
+	TaskProcessOrder(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
@@ -50,7 +50,8 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt) TaskProcessor {
 func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 
-	mux.HandleFunc(TaskProcessOrder, processor.ProcessTaskOrder)
+	mux.HandleFunc(TaskProcessOrder, processor.TaskProcessOrder)
+	mux.HandleFunc(TaskOrderStatusUpdate, processor.TaskOrderStatusUpdate)
 
 	return processor.server.Start(mux)
 }

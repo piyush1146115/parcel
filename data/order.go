@@ -81,10 +81,40 @@ func IsValidOrderId(id int64) bool {
 func GetOrderStatus(id int64) (*OrderStatus, error) {
 	i := findOrderById(id)
 	if i == -1 {
-		return nil, fmt.Errorf("invalid order id: %d", id)
+		return nil, ErrOrderNotFound
 	}
 
 	return &orderList[i].Status, nil
+}
+
+func GetAnOrderIdWithInProgressStatus() int64 {
+	for i := range orderList {
+		if orderList[i].Status == INPROGRESS {
+			return orderList[i].Id
+		}
+	}
+
+	return -1
+}
+
+func GetAnOrderIdWithAcceptedStatus() int64 {
+	for i := range orderList {
+		if orderList[i].Status == ACCEPTED {
+			return orderList[i].Id
+		}
+	}
+
+	return -1
+}
+
+func UpdateRiderStatusFromOrder(orderId int64, status RiderStatus) error {
+	i := findOrderById(orderId)
+	if i == -1 {
+		return ErrOrderNotFound
+	}
+
+	rid := orderList[i].RiderId
+	return UpdateRiderStatus(rid, status)
 }
 
 func findOrderById(id int64) int {
