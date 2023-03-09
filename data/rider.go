@@ -1,6 +1,8 @@
 package data
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Rider struct {
 	Id               int         `json:"id,omitempty"`
@@ -55,6 +57,10 @@ func UpdateRiderStatus(id int, status RiderStatus) error {
 
 	riderList[i].Status = status
 	return nil
+}
+
+func GetTotalAvailableRiders() int {
+	return len(riderList)
 }
 
 func GetRidersCurrentLocation(id int) (*float64, *float64, error) {

@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/piyush1146115/parcel/data"
 	"github.com/piyush1146115/parcel/logger"
 	"github.com/piyush1146115/parcel/worker"
 	"github.com/rs/zerolog"
+	"math/rand"
 
 	"github.com/hibiken/asynq"
 	"github.com/piyush1146115/parcel/config"
@@ -35,6 +38,8 @@ func main() {
 		Addr: config.RedisAddress,
 	}
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+
+	// Run the task processor for Asynq
 	go runTaskProcessor(redisOpt)
 
 	oh := handler.NewOrderHandler(taskDistributor)
@@ -69,6 +74,9 @@ func main() {
 		}
 	}()
 
+	// Update rider's location periodically
+	go updateRidersLocationPeriodically(time.Second * 30)
+
 	// Wait for an interrupt signal to gracefully shut down the server
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt)
@@ -98,5 +106,23 @@ func runTaskProcessor(redisOpt asynq.RedisClientOpt) {
 	err := taskProcessor.Start()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to start task processor")
+	}
+}
+
+func updateRidersLocationPeriodically(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		totalRiders := data.GetTotalAvailableRiders()
+		id := rand.Intn(totalRiders)
+		long := rand.Float64()*(180-(-180)) + (-180)
+		lat := rand.Float64()*(90-(-90)) + (-90)
+
+		if err := data.UpdateRidersLocation(id, long, lat); err != nil {
+			log.Err(fmt.Errorf("failed to update riders location with id %d: %w", id, err))
+		}
+
+		log.Info().Msg(fmt.Sprintf("Updated location of rider with id: %d", id))
 	}
 }
