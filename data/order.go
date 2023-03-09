@@ -72,6 +72,20 @@ func UpdateOrderStatus(id int64, status OrderStatus) error {
 	return nil
 }
 
+func IsValidOrderId(id int64) bool {
+	i := findOrderById(id)
+	return i != -1
+}
+
+func GetOrderStatus(id int64) (*OrderStatus, error) {
+	i := findOrderById(id)
+	if i == -1 {
+		return nil, fmt.Errorf("invalid order id: %d", id)
+	}
+
+	return &orderList[i].Status, nil
+}
+
 func findOrderById(id int64) int {
 	for i, o := range orderList {
 		if o.Id == id {

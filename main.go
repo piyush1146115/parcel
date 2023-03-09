@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/hashicorp/go-hclog"
-	"github.com/nicholasjackson/env"
 	"github.com/piyush1146115/parcel/handler"
 	"log"
 	"net/http"
@@ -13,19 +12,20 @@ import (
 	"time"
 )
 
-var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "Bind address for the server")
-
 func main() {
-
 	sm := mux.NewRouter()
 
+	getR := sm.Methods(http.MethodGet).Subrouter()
+	getR.HandleFunc("/", handler.Home)
+	getR.HandleFunc("/api/v1/order/status/{order_id:[0-9]+}", handler.OrderStatus)
+
 	postR := sm.Methods(http.MethodPost).Subrouter()
-	postR.HandleFunc("/api/v1/parcel", handler.HandleNewParcelRequest)
+	postR.HandleFunc("/api/v1/parcel/{customer_id:[0-9]+}", handler.NewParcelRequest)
 	l := hclog.Default()
 
 	// create a new server
 	srv := http.Server{
-		Addr:         ":9080",                                          //bindAddress,                                     // configure the bind address
+		Addr:         ":8090",                                          //bindAddress,
 		Handler:      sm,                                               // set the default handler
 		ErrorLog:     l.StandardLogger(&hclog.StandardLoggerOptions{}), // set the logger for the server
 		ReadTimeout:  5 * time.Second,                                  // max time to read request from the client

@@ -1,11 +1,10 @@
 package data
 
 type Parcel struct {
-	CustomerID       int     `json:"customer_id"`
 	ReceiverName     string  `json:"receiver_name,omitempty"`
 	ReceiverNumber   string  `json:"receiver_number,omitempty"`
-	PickupAddress    string  `json:"pickup_address"`
-	DropOffAddress   string  `json:"dropoff_address"`
+	PickupAddress    string  `json:"pickup_address,omitempty"`
+	DropOffAddress   string  `json:"dropoff_address,omitempty"`
 	PickupLatitude   float64 `json:"pickup_latitude"`
 	PickupLongitude  float64 `json:"pickup_longitude"`
 	DropOffLatitude  float64 `json:"dropoff_latitude"`
