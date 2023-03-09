@@ -48,9 +48,8 @@ func main() {
 
 	// create a new server
 	srv := http.Server{
-		Addr:    config.HTTPServerAddress, //bindAddress,
-		Handler: sm,                       // set the default handler
-		//ErrorLog:     l.StandardLogger(&hclog.StandardLoggerOptions{}), // set the logger for the server
+		Addr:         config.HTTPServerAddress,
+		Handler:      sm,                // set the default handler
 		ReadTimeout:  5 * time.Second,   // max time to read request from the client
 		WriteTimeout: 10 * time.Second,  // max time to write response to the client
 		IdleTimeout:  120 * time.Second, // max time for connections using TCP Keep-Alive
