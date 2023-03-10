@@ -84,6 +84,7 @@ Sample response:
 ```bash
     curl localhost:8090/api/v1/rider/status/5
 ```
+Sample response: `{"rider_id":5,"rider_status":"Available"}`
 
 - Get the current status of the order with ID 1678341228942000002 (Valid Order Id)
 ```bash
@@ -92,8 +93,6 @@ curl localhost:8090/api/v1/order/status/1678341228942000002
 Sample response:
 `{"order_id":1678345319223000002,"order_status":"Accepted"}`
 `{"order_id":1678345319223000002,"order_status":"Searching Rider"}`
-
-
 
 ## System Design
 
@@ -113,6 +112,40 @@ Sample response:
 10. Order Status Queue will send event to the notification service
 11. The Notification service will send notification to the users
 
-## DB Schema
+
+## Implementation details
+
+Here, we are going to look at some implementation details
+
+### Order Processing
+- Each New parcel creation API call is responded with a unique order ID based on current timestamp
+- The server saves the order ID in orders list and send an event to order processing queue and order status tracking queue
+- The order status queue periodically checks for order status by corresponding orderID and check if order completed
+- The order processing queue process rest of the tasks related to order and update the records
+
+### How the Queue works
+
+We have implemented a Redis Queue which acts like a message broker. It runs some concurrent workers
+to process works concurrently. We have used this queue to track order status, update order status, rider status etc.
+In the backend, we used Asynq library. The following image depicts how [Asynq](https://github.com/hibiken/asynq) workers work under the hood.
+
+![Asynq](./media/Asynq.png)
+
+### How the location and order status update work
+
+In the real world system, there should be separate microservices for updating order status 
+and Rider's current location. However, for fast development we stayed in the
+monolith approach. We have mock the location update service and order status service with `time.Ticker` and goroutine in Golang.
+We have implemented two separate functions those will run concurrently and update Rider's location and order status.
+
+### Database
+
+We have assumed that we already have a set of rider and user information to our
+service. Again, for going fast we mocked the database with some in-memory json arrays.
+However, we will move into `Postgres` as permanent data storage and `Redis` as cache data
+storage in near future. For reference, we have designed a `DB Schema` like the following. 
 
 ![DB Schema](./media/parcel.png)
+
+
+

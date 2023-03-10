@@ -154,6 +154,5 @@ func updateOrderStatusPeriodically(interval time.Duration) {
 				data.UpdateOrderStatus(id, data.COMPLETED)
 			}
 		}
-
 	}
 }
