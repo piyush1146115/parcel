@@ -1,5 +1,8 @@
-redis:
+redis-run:
 	docker run --name redis --net=host  -d redis:7-alpine
+
+redis-pull:
+	docker pull redis:7-alpine
 
 redis-ping:
 	docker exec -it redis redis-cli ping
@@ -19,10 +22,12 @@ push:
     # Push the Docker image to Docker Hub
 	docker push $(DOCKER_REPO):latest
 
+install-dependencies: redis-pull redis-run
+
 install:
 	# Pull the latest image from Docker hub
 	docker pull $(DOCKER_REPO):latest
 	# Run the image locally
 	docker run --name parcel-simulator --net=host -d $(DOCKER_REPO):latest
 
-.PHONY: redis redis-ping build push install
+.PHONY: redis-pull redis-run redis-ping build push install install-dependencies

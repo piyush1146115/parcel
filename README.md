@@ -1,5 +1,57 @@
 # Parcel-Simulator
 
+## Installing the application
+You can run the application by cloning this to your local machine or directly from Docker image.
+
+The following sections will guide you to install the application:
+
+### Run from Docker images
+
+If you want to test the application by only running the Docker containers, you can follow
+the steps below:
+
+- Pull Redis Docker image:
+```bash
+    docker pull redis:7-alpine
+```
+
+- Run the Redis image:
+```bash
+  docker run --name redis --net=host  -d redis:7-alpine
+```
+
+- Pull the application image:
+```bash
+  docker pull piyush1146115/parcel:latest
+```
+
+- Run the application image:
+```bash
+  docker run --name parcel-simulator --net=host -d piyush1146115/parcel:latest
+```
+
+### By Cloning the Repository locally
+
+- Clone the repository locally using git
+- Change your current directory to the location of the project:
+```bash
+  cd ./../parcel  
+```
+
+- Install the external dependencies like DB:
+```bash
+  make install-dependencies
+```
+
+- Install and run the application:
+```bash
+    make install
+```
+
+This above steps should complete your installation. 
+
+**N.B:** Both of the above process assumes that Docker client is installed on your local machine
+
 ## HTTP Requests
 Here are some demo request of the server:
 
@@ -34,6 +86,7 @@ curl localhost:8090/api/v1/order/status/1678341228942000002
 ```
 Sample response:
 `{"order_id":1678345319223000002,"order_status":"Accepted"}`
+`{"order_id":1678345319223000002,"order_status":"Searching Rider"}`
 
 
 
