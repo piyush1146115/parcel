@@ -35,10 +35,26 @@ curl localhost:8090/api/v1/order/status/1678341228942000002
 Sample response:
 `{"order_id":1678345319223000002,"order_status":"Accepted"}`
 
-## DB Schema
 
-![DB Schema](./media/parcel.png)
 
 ## System Design
 
-![System Design](./media/System-Design-Parcel.png)
+![System Design](./media/system-design.png)
+
+### High level system design flow
+
+1. The API will receive a new order request and response with a unique order ID
+2. The API will send events to the order processing task queue and Order status tracking queue
+3. The Order processing service will process the order requests asynchronously
+4. The Order processing service will find a nearest rider for the request based on availability
+5. If there is no available rider, then send another requeue event to the order processing task
+6. Rider service will send a request to the Location service to track available Riders location
+7. The Location service will update the current location to the cache
+8. Order Processing service will update the oder status in the cache
+9. Order Status Queue will get updated status from the cache periodically
+10. Order Status Queue will send event to the notification service
+11. The Notification service will send notification to the users
+
+## DB Schema
+
+![DB Schema](./media/parcel.png)
