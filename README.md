@@ -1,5 +1,7 @@
 # Parcel-Simulator
 
+Welcome to the Parcel-simulator app. In the following sections you will get idea about the whole system in brief:
+
 ## Installing the application
 You can run the application by cloning this to your local machine or directly from Docker image.
 
@@ -86,6 +88,12 @@ Sample response:
 ```
 Sample response: `{"rider_id":5,"rider_status":"Available"}`
 
+- Get the current status of a Rider with ID 5
+```bash
+    curl localhost:8090/api/v1/rider/location/6
+```
+Sample response: `{"rider_id":6,"rider_latitude":37.7749,"rider_longitude":-122.4191}`
+
 - Get the current status of the order with ID 1678341228942000002 (Valid Order Id)
 ```bash
 curl localhost:8090/api/v1/order/status/1678341228942000002
@@ -111,7 +119,6 @@ Sample response:
 9. Order Status Queue will get updated status from the cache periodically
 10. Order Status Queue will send event to the notification service
 11. The Notification service will send notification to the users
-
 
 ## Implementation details
 

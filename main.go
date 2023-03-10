@@ -91,6 +91,7 @@ func getNewRouter(oh *handler.OrderHandler) *mux.Router {
 	getR.HandleFunc("/", handler.Home)
 	getR.HandleFunc("/api/v1/order/status/{order_id:[0-9]+}", handler.OrderStatus)
 	getR.HandleFunc("/api/v1/rider/status/{rider_id:[0-9]+}", handler.RiderStatus)
+	getR.HandleFunc("/api/v1/rider/location/{rider_id:[0-9]+}", handler.RiderCurrentLocation)
 
 	postR := sm.Methods(http.MethodPost).Subrouter()
 	postR.HandleFunc("/api/v1/parcel/{customer_id:[0-9]+}", oh.NewParcelRequest)
