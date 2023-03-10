@@ -38,3 +38,7 @@ Sample response:
 ## DB Schema
 
 ![DB Schema](./media/parcel.png)
+
+## System Design
+
+![System Design](./media/System-Design-Parcel.png)
