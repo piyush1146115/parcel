@@ -80,6 +80,11 @@ curl localhost:8090
 Sample response:
 `Welcome to the Homepage of parcel simulator!`
 
+- Get the current status of a Rider with ID 5
+```bash
+    curl localhost:8090/api/v1/rider/status/5
+```
+
 - Get the current status of the order with ID 1678341228942000002 (Valid Order Id)
 ```bash
 curl localhost:8090/api/v1/order/status/1678341228942000002

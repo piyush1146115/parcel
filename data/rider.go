@@ -21,12 +21,12 @@ const (
 	CYCLIST RiderType = 1
 )
 
-type RiderStatus int8
+type RiderStatus string
 
 const (
-	Available RiderStatus = 1
-	Offline   RiderStatus = 0
-	OnTrip    RiderStatus = 2
+	Available RiderStatus = "Available"
+	Offline   RiderStatus = "Offline"
+	OnTrip    RiderStatus = "On Trip"
 )
 
 func GetAvailableCyclist(long, lat float64) *Rider {
@@ -78,8 +78,22 @@ func UpdateRiderStatus(id int, status RiderStatus) error {
 	return nil
 }
 
+func GetRiderStatus(id int) (*RiderStatus, error) {
+	i := findRiderByID(id)
+	if i == -1 {
+		return nil, ErrRiderNotFound
+	}
+
+	return &riderList[i].Status, nil
+}
+
 func GetTotalAvailableRiders() int {
 	return len(riderList)
+}
+
+func IsValidRiderId(id int) bool {
+	i := findRiderByID(id)
+	return i != -1
 }
 
 func GetRidersCurrentLocation(id int) (*float64, *float64, error) {

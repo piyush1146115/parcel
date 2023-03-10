@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-	sm := mux.NewRouter()
+
 	logger := logger.NewLogger()
 
 	config, err := config.LoadConfig(".")
@@ -38,44 +38,22 @@ func main() {
 		Addr: config.RedisAddress,
 	}
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+	oh := handler.NewOrderHandler(taskDistributor)
+
+	sm := getNewRouter(oh)
+	srv := getNewServer(sm, config.HTTPServerAddress)
+
+	// start the server
+	go startServer(srv, logger)
 
 	// Run the task processor for Asynq
 	go runTaskProcessor(redisOpt)
 
-	oh := handler.NewOrderHandler(taskDistributor)
-
-	getR := sm.Methods(http.MethodGet).Subrouter()
-	getR.HandleFunc("/", handler.Home)
-	getR.HandleFunc("/api/v1/order/status/{order_id:[0-9]+}", handler.OrderStatus)
-
-	postR := sm.Methods(http.MethodPost).Subrouter()
-	postR.HandleFunc("/api/v1/parcel/{customer_id:[0-9]+}", oh.NewParcelRequest)
-
-	// create a new server
-	srv := http.Server{
-		Addr:         config.HTTPServerAddress,
-		Handler:      sm,                // set the default handler
-		ReadTimeout:  5 * time.Second,   // max time to read request from the client
-		WriteTimeout: 10 * time.Second,  // max time to write response to the client
-		IdleTimeout:  120 * time.Second, // max time for connections using TCP Keep-Alive
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	// start the server
-	go func() {
-		logger.Info("Starting server...")
-
-		if err := srv.ListenAndServe(); err != nil {
-			if err != http.ErrServerClosed {
-				logger.Error("Error starting server", "error", err)
-				os.Exit(1)
-			}
-		}
-	}()
-
 	// Update rider's location periodically
 	go updateRidersLocationPeriodically(time.Second * 30)
+
+	// Update the order statuses periodically
+	go updateOrderStatusPeriodically(time.Second * 45)
 
 	// Wait for an interrupt signal to gracefully shut down the server
 	sigint := make(chan os.Signal, 1)
@@ -85,12 +63,9 @@ func main() {
 	log.Print("Got signal:", sig)
 	logger.Info("Shutting down server...")
 
-	// First, cancel the context to signal the server to stop
-	cancel()
-
 	// Then, wait for the server to finish processing any requests
 	timeout := 10 * time.Second
-	ctx, cancel = context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
@@ -109,6 +84,41 @@ func runTaskProcessor(redisOpt asynq.RedisClientOpt) {
 	}
 }
 
+func getNewRouter(oh *handler.OrderHandler) *mux.Router {
+	sm := mux.NewRouter()
+
+	getR := sm.Methods(http.MethodGet).Subrouter()
+	getR.HandleFunc("/", handler.Home)
+	getR.HandleFunc("/api/v1/order/status/{order_id:[0-9]+}", handler.OrderStatus)
+	getR.HandleFunc("/api/v1/rider/status/{rider_id:[0-9]+}", handler.RiderStatus)
+
+	postR := sm.Methods(http.MethodPost).Subrouter()
+	postR.HandleFunc("/api/v1/parcel/{customer_id:[0-9]+}", oh.NewParcelRequest)
+
+	return sm
+}
+
+func getNewServer(sm *mux.Router, address string) http.Server {
+	return http.Server{
+		Addr:         address,
+		Handler:      sm,                // set the default handler
+		ReadTimeout:  5 * time.Second,   // max time to read request from the client
+		WriteTimeout: 10 * time.Second,  // max time to write response to the client
+		IdleTimeout:  120 * time.Second, // max time for connections using TCP Keep-Alive
+	}
+
+}
+
+func startServer(srv http.Server, l *logger.Logger) {
+	l.Info("Starting server...")
+
+	if err := srv.ListenAndServe(); err != nil {
+		if err != http.ErrServerClosed {
+			l.Error("Error starting server", "error", err)
+			os.Exit(1)
+		}
+	}
+}
 func updateRidersLocationPeriodically(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
