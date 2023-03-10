@@ -12,8 +12,6 @@ FROM alpine:3.16
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY app.env .
-COPY start.sh .
 
 EXPOSE 8090
 CMD [ "/app/main" ]
-ENTRYPOINT [ "/app/start.sh" ]
