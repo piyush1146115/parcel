@@ -3,8 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/piyush1146115/parcel/data"
 	"net/http"
+
+	"github.com/piyush1146115/parcel/data"
 )
 
 type OrderStatusResponse struct {

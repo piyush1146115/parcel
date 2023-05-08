@@ -2,10 +2,10 @@ package worker
 
 import (
 	"context"
-	"github.com/piyush1146115/parcel/logger"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/hibiken/asynq"
+	"github.com/piyush1146115/parcel/logger"
 	"github.com/rs/zerolog/log"
 )
 

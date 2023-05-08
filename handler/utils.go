@@ -1,9 +1,10 @@
 package handler
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 func getCustomerID(r *http.Request) (int, error) {

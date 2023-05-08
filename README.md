@@ -3,9 +3,11 @@
 Welcome to the Parcel-simulator app. In the following sections you will get idea about the whole system in brief:
 
 ## Installing the application
+
 You can run the application by cloning this to your local machine or directly from Docker image.
 
 The following sections will guide you to install the application:
+
 
 ### Run from Docker images
 
@@ -40,14 +42,9 @@ the steps below:
   cd ./../parcel  
 ```
 
-- Install the external dependencies like DB:
+Run Docker compose file:
 ```bash
-  make install-dependencies
-```
-
-- Install and run the application:
-```bash
-    make install
+    docker compose up -d
 ```
 
 This above steps should complete your installation. 

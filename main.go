@@ -3,48 +3,46 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/piyush1146115/parcel/data"
-	"github.com/piyush1146115/parcel/logger"
-	"github.com/piyush1146115/parcel/worker"
-	"github.com/rs/zerolog"
 	"math/rand"
-
-	"github.com/hibiken/asynq"
-	"github.com/piyush1146115/parcel/config"
-	"github.com/piyush1146115/parcel/handler"
-
-	"github.com/rs/zerolog/log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/hibiken/asynq"
+	"github.com/piyush1146115/parcel/config"
+	"github.com/piyush1146115/parcel/data"
+	"github.com/piyush1146115/parcel/handler"
+	"github.com/piyush1146115/parcel/logger"
+	"github.com/piyush1146115/parcel/worker"
+	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 )
 
 func main() {
+	log := logger.NewLogger()
 
-	logger := logger.NewLogger()
-
-	config, err := config.LoadConfig(".")
+	cfg, err := config.LoadConfig(".")
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot load config")
+		zlog.Fatal().Err(err).Msg("cannot load config")
 	}
 
-	if config.Environment == "development" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	if cfg.Environment == "development" {
+		zlog.Logger = zlog.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	redisOpt := asynq.RedisClientOpt{
-		Addr: config.RedisAddress,
+		Addr: cfg.RedisAddress,
 	}
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 	oh := handler.NewOrderHandler(taskDistributor)
 
 	sm := getNewRouter(oh)
-	srv := getNewServer(sm, config.HTTPServerAddress)
+	srv := getNewServer(sm, cfg.HTTPServerAddress)
 
 	// start the server
-	go startServer(srv, logger)
+	go startServer(srv, log)
 
 	// Run the task processor for Asynq
 	go runTaskProcessor(redisOpt)
@@ -60,8 +58,8 @@ func main() {
 	signal.Notify(sigint, os.Interrupt)
 	sig := <-sigint
 
-	log.Print("Got signal:", sig)
-	logger.Info("Shutting down server...")
+	zlog.Print("Got signal:", sig)
+	log.Info("Shutting down server...")
 
 	// Then, wait for the server to finish processing any requests
 	timeout := 10 * time.Second
@@ -69,18 +67,18 @@ func main() {
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		logger.Fatal("Could not gracefully shutdown server: %v\n", err)
+		log.Fatal("Could not gracefully shutdown server: %v\n", err)
 	}
 
-	logger.Info("Server stopped.")
+	log.Info("Server stopped.")
 }
 
 func runTaskProcessor(redisOpt asynq.RedisClientOpt) {
 	taskProcessor := worker.NewRedisTaskProcessor(redisOpt)
-	log.Info().Msg("Start task processor...")
+	zlog.Info().Msg("Start task processor...")
 	err := taskProcessor.Start()
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to start task processor")
+		zlog.Fatal().Err(err).Msg("failed to start task processor")
 	}
 }
 
@@ -99,8 +97,8 @@ func getNewRouter(oh *handler.OrderHandler) *mux.Router {
 	return sm
 }
 
-func getNewServer(sm *mux.Router, address string) http.Server {
-	return http.Server{
+func getNewServer(sm *mux.Router, address string) *http.Server {
+	return &http.Server{
 		Addr:         address,
 		Handler:      sm,                // set the default handler
 		ReadTimeout:  5 * time.Second,   // max time to read request from the client
@@ -110,7 +108,7 @@ func getNewServer(sm *mux.Router, address string) http.Server {
 
 }
 
-func startServer(srv http.Server, l *logger.Logger) {
+func startServer(srv *http.Server, l *logger.Logger) {
 	l.Info("Starting server...")
 
 	if err := srv.ListenAndServe(); err != nil {
@@ -131,10 +129,10 @@ func updateRidersLocationPeriodically(interval time.Duration) {
 		lat := rand.Float64()*(90-(-90)) + (-90)
 
 		if err := data.UpdateRidersLocation(id, long, lat); err != nil {
-			log.Err(fmt.Errorf("failed to update riders location with id %d: %w", id, err))
+			zlog.Err(fmt.Errorf("failed to update riders location with id %d: %w", id, err))
 		}
 
-		log.Info().Msg(fmt.Sprintf("Updated location of rider with id: %d", id))
+		zlog.Info().Msg(fmt.Sprintf("Updated location of rider with id: %d", id))
 	}
 }
 

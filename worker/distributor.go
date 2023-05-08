@@ -2,9 +2,9 @@ package worker
 
 import (
 	"context"
-	"github.com/piyush1146115/parcel/data"
 
 	"github.com/hibiken/asynq"
+	"github.com/piyush1146115/parcel/data"
 )
 
 type TaskDistributor interface {

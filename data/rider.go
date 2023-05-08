@@ -17,8 +17,8 @@ type Rider struct {
 type RiderType int8
 
 const (
-	BIKER   RiderType = 0
-	CYCLIST RiderType = 1
+	BIKER RiderType = iota
+	CYCLIST
 )
 
 type RiderStatus string
@@ -63,7 +63,6 @@ func GetAvailableBiker(long, lat float64) *Rider {
 	}
 
 	return rider
-	return nil
 }
 
 var ErrRiderNotFound = fmt.Errorf("Rider not found")

@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/hibiken/asynq"
 	"github.com/piyush1146115/parcel/config"
 	"github.com/piyush1146115/parcel/data"
 	"github.com/rs/zerolog/log"
-	"time"
 )
 
 const TaskOrderStatusUpdate = "task:order_status_update"
